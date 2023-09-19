@@ -318,6 +318,7 @@ public class AutoInterfaceSourceGenerator : ISourceGenerator
                 ITypeSymbol? type = null;
                 bool? includeBaseInterfaces = null;
                 bool? preferCoalesce = null;
+                bool? allowMissingMembers = null;
 
                 if (attribute.ConstructorArguments.Length == 0)
                 {
@@ -350,7 +351,7 @@ public class AutoInterfaceSourceGenerator : ISourceGenerator
                         {
                             switch (arg.Key)
                             {
-                                case "TemplateFileName":
+                                case nameof(AutoInterfaceAttribute.TemplateFileName):
                                     {
                                         if (arg.Value.Value is string s)
                                         {
@@ -358,7 +359,7 @@ public class AutoInterfaceSourceGenerator : ISourceGenerator
                                         }
                                     }
                                     break;
-                                case "TemplateBody":
+                                case nameof(AutoInterfaceAttribute.TemplateBody):
                                     {
                                         if (arg.Value.Value is string s)
                                         {
@@ -366,7 +367,7 @@ public class AutoInterfaceSourceGenerator : ISourceGenerator
                                         }
                                     }
                                     break;
-                                case "TemplateLanguage":
+                                case nameof(AutoInterfaceAttribute.TemplateLanguage):
                                     {
                                         if (arg.Value.Value is string s)
                                         {
@@ -374,7 +375,7 @@ public class AutoInterfaceSourceGenerator : ISourceGenerator
                                         }
                                     }
                                     break;
-                                case "IncludeBaseInterfaces":
+                                case nameof(AutoInterfaceAttribute.IncludeBaseInterfaces):
                                     {
                                         if (arg.Value.Value is bool b)
                                         {
@@ -382,11 +383,19 @@ public class AutoInterfaceSourceGenerator : ISourceGenerator
                                         }
                                     }
                                     break;
-                                case "PreferCoalesce":
+                                case nameof(AutoInterfaceAttribute.PreferCoalesce):
                                     {
                                         if (arg.Value.Value is bool b)
                                         {
                                             preferCoalesce = b;
+                                        }
+                                    }
+                                    break;
+                                case nameof(AutoInterfaceAttribute.AllowMissingMembers):
+                                    {
+                                        if (arg.Value.Value is bool b)
+                                        {
+                                            allowMissingMembers = b;
                                         }
                                     }
                                     break;
@@ -470,7 +479,8 @@ public class AutoInterfaceSourceGenerator : ISourceGenerator
                             }
                         }
                         else if (receiverType.IsAllInterfaceMembersImplementedBySignature(type) && 
-                            (includeBaseInterfaces.Value == false || interfaceType.AllInterfaces.All(i => receiverType.IsMatchByTypeOrImplementsInterface(i) || receiverType.IsAllInterfaceMembersImplementedBySignature(i))))
+                            (includeBaseInterfaces.Value == false || interfaceType.AllInterfaces.All(i => receiverType.IsMatchByTypeOrImplementsInterface(i) || receiverType.IsAllInterfaceMembersImplementedBySignature(i)))
+                            || allowMissingMembers == true)
                         {
                             danglingInterfaceTypesBySymbols.Remove(symbol);
                             records.Add(new AutoInterfaceRecord(symbol, receiverType, interfaceType, template, templateParts, true, preferCoalesce.Value));
