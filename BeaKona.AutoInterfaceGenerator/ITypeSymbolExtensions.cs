@@ -55,7 +55,21 @@ internal static class ITypeSymbolExtensions
         }
     }
 
-    public static bool IsMemberImplemented(this ITypeSymbol @this, ISymbol member)
+    private static IEnumerable<MethodKind> ExplicitMethodKinds()
+    {
+        yield return MethodKind.ExplicitInterfaceImplementation;
+    }
+
+    private static IEnumerable<MethodKind> OtherAllowedMethodKinds()
+    {
+        yield return MethodKind.Ordinary;
+        yield return MethodKind.LambdaMethod;
+    }
+    public static bool IsMemberImplementedExplicitly(this ITypeSymbol @this, ISymbol member) => @this.IsMemberImplementedInternal(member, ExplicitMethodKinds());
+
+    public static bool IsMemberImplemented(this ITypeSymbol @this, ISymbol member) => @this.IsMemberImplementedInternal(@member, ExplicitMethodKinds().Concat(OtherAllowedMethodKinds()));
+
+    private static bool IsMemberImplementedInternal(this ITypeSymbol @this, ISymbol member, IEnumerable<MethodKind> allowedMethodKinds)
     {
         ISymbol? implementation = @this.FindImplementationForInterfaceMember(member);
 
@@ -66,7 +80,7 @@ internal static class ITypeSymbolExtensions
 
         return implementation switch
         {
-            IMethodSymbol methodImplementation => methodImplementation.MethodKind == MethodKind.ExplicitInterfaceImplementation,
+            IMethodSymbol methodImplementation => allowedMethodKinds.Contains(methodImplementation.MethodKind),
             IPropertySymbol propertyImplementation => propertyImplementation.ExplicitInterfaceImplementations.Any(),
             IEventSymbol eventImplementation => eventImplementation.ExplicitInterfaceImplementations.Any(),
             _ => false,

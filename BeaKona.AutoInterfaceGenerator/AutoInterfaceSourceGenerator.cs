@@ -638,10 +638,10 @@ public class AutoInterfaceSourceGenerator : ISourceGenerator
                     return m;
                 }
 
-                model.Methods.AddRange(@interface.GetMethods().Where(i => type.IsMemberImplemented(i) == false).Select(CreateMethod));
-                model.Properties.AddRange(@interface.GetProperties().Where(i => type.IsMemberImplemented(i) == false).Select(CreateProperty));
-                model.Indexers.AddRange(@interface.GetIndexers().Where(i => type.IsMemberImplemented(i) == false).Select(CreateIndexer));
-                model.Events.AddRange(@interface.GetEvents().Where(i => type.IsMemberImplemented(i) == false).Select(CreateEvent));
+                model.Methods.AddRange(@interface.GetMethods().Where(i => type.IsMemberImplementedExplicitly(i) == false).Select(CreateMethod));
+                model.Properties.AddRange(@interface.GetProperties().Where(i => type.IsMemberImplementedExplicitly(i) == false).Select(CreateProperty));
+                model.Indexers.AddRange(@interface.GetIndexers().Where(i => type.IsMemberImplementedExplicitly(i) == false).Select(CreateIndexer));
+                model.Events.AddRange(@interface.GetEvents().Where(i => type.IsMemberImplementedExplicitly(i) == false).Select(CreateEvent));
 
                 generator.Emit(writer, builder, model, ref separatorRequired);
                 anyReasonToEmitSourceFile = true;
@@ -654,7 +654,7 @@ public class AutoInterfaceSourceGenerator : ISourceGenerator
             }
             else
             {
-                foreach (IMethodSymbol method in @interface.GetMethods().Where(i => type.IsMemberImplemented(i) == false))
+                foreach (IMethodSymbol method in @interface.GetMethods().Where(i => type.IsMemberImplementedExplicitly(i) == false && references.First().ReceiverType.IsMemberImplemented(i)))
                 {
                     anyReasonToEmitSourceFile = true;
 
@@ -666,7 +666,7 @@ public class AutoInterfaceSourceGenerator : ISourceGenerator
                     separatorRequired = true;
                 }
 
-                foreach (IPropertySymbol property in @interface.GetProperties().Where(i => type.IsMemberImplemented(i) == false))
+                foreach (IPropertySymbol property in @interface.GetProperties().Where(i => type.IsMemberImplementedExplicitly(i) == false && references.First().ReceiverType.IsMemberImplemented(i)))
                 {
                     anyReasonToEmitSourceFile = true;
 
@@ -679,7 +679,7 @@ public class AutoInterfaceSourceGenerator : ISourceGenerator
                     separatorRequired = true;
                 }
 
-                foreach (IPropertySymbol indexer in @interface.GetIndexers().Where(i => type.IsMemberImplemented(i) == false))
+                foreach (IPropertySymbol indexer in @interface.GetIndexers().Where(i => type.IsMemberImplementedExplicitly(i) == false && references.First().ReceiverType.IsMemberImplemented(i)))
                 {
                     anyReasonToEmitSourceFile = true;
 
@@ -692,7 +692,7 @@ public class AutoInterfaceSourceGenerator : ISourceGenerator
                     separatorRequired = true;
                 }
 
-                foreach (IEventSymbol @event in @interface.GetEvents().Where(i => type.IsMemberImplemented(i) == false))
+                foreach (IEventSymbol @event in @interface.GetEvents().Where(i => type.IsMemberImplementedExplicitly(i) == false && references.First().ReceiverType.IsMemberImplemented(i)))
                 {
                     anyReasonToEmitSourceFile = true;
 
